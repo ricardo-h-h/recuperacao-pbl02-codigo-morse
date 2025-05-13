@@ -95,5 +95,93 @@ public class MorseBST {
         return null;
     }
 
-    
+    public String decode(String morseSequence) {
+        StringBuilder decodedText = new StringBuilder();
+        String[] morseWords = morseSequence.trim().split(" / ");
+
+        for (int i = 0; i < morseWords.length; i++) {
+            String morseWord = morseWords[i];
+            if (morseWord.isEmpty()) continue;
+
+            String[] morseChars = morseWord.trim().split(" ");
+            for (String morseChar : morseChars) {
+                if (morseChar.isEmpty()) continue;
+                char decodedChar = decodeSingleChar(morseChar);
+                if (decodedChar != '\0') {
+                    decodedText.append(decodedChar);
+                } else {
+                    decodedText.append("?");
+                }
+            }
+            if (i < morseWords.length - 1) {
+                decodedText.append(" ");
+            }
+        }
+        return decodedText.toString();
+    }
+
+    private char decodeSingleChar(String morseChar) {
+        Node currentNode = root;
+        for (char symbol : morseChar.toCharArray()) {
+            if (symbol == '.') {
+                if (currentNode.left == null) return '\0';
+                currentNode = currentNode.left;
+            } else if (symbol == '-') {
+                if (currentNode.right == null) return '\0';
+                currentNode = currentNode.right;
+            } else {
+                return '\0';
+            }
+        }
+        return currentNode.letter;
+    }
+
+    public int getHeight() {
+        return getHeight(root);
+    }
+
+    private int getHeight(Node node) {
+        if (node == null) {
+            return 0;
+        }
+        return 1 + Math.max(getHeight(node.left), getHeight(node.right));
+    }
+
+    public void drawTree(Canvas canvas) {
+        GraphicsContext gc = canvas.getGraphicsContext2D();
+        gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
+        gc.setStroke(Color.BLACK);
+        gc.setLineWidth(2);
+        drawNode(gc, root, canvas.getWidth() / 2, 40, canvas.getWidth() / 4, 1);
+    }
+
+    private void drawNode(GraphicsContext gc, Node node, double x, double y, double xOffset, int level) {
+        if (node == null) {
+            return;
+        }
+
+        gc.setStroke(Color.BLACK);
+        gc.strokeOval(x - 15, y - 15, 30, 30);
+
+        if (node.letter != '\0') {
+            gc.setFill(Color.BLACK);
+            gc.fillText(String.valueOf(node.letter), x - 5, y + 5);
+        }
+
+        double verticalSpacing = 120;
+
+        if (node.left != null) {
+            double newX = x - xOffset;
+            double newY = y + verticalSpacing;
+            gc.strokeLine(x, y + 15, newX, newY - 15);
+            drawNode(gc, node.left, newX, newY, xOffset / 2, level + 1);
+        }
+
+        if (node.right != null) {
+            double newX = x + xOffset;
+            double newY = y + verticalSpacing;
+            gc.strokeLine(x, y + 15, newX, newY - 15);
+            drawNode(gc, node.right, newX, newY, xOffset / 2, level + 1);
+        }
+    }
 }
